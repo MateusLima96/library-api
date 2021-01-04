@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
@@ -22,12 +24,17 @@ public class BookRepositoryTest {
     @Autowired
     BookRepository repository;
 
+
+    private Book createNewBook(String isbn) {
+        return Book.builder().title("qualquer titulo").author("fulanin").isbn(isbn).build();
+    }
+
     @Test
     @DisplayName("deve retornar verdadeiro quando existir um livro na base com o isbn informado")
     public void returnTrueWhenIsbnExists(){
         //cenario
         String isbn = "123";
-        Book book = Book.builder().title("qualquer titulo").author("fulanin").isbn(isbn).build();
+        Book book = createNewBook(isbn);
         entityManager.persist(book);
         //execucao
         boolean exists = repository.existsByIsbn(isbn);
@@ -35,6 +42,7 @@ public class BookRepositoryTest {
         assertThat(exists).isTrue();
 
     }
+
 
     @Test
     @DisplayName("deve retornar falso quando não existir um livro na base com o isbn informado")
@@ -45,6 +53,18 @@ public class BookRepositoryTest {
         boolean exists = repository.existsByIsbn(isbn);
         //verificacao
         assertThat(exists).isFalse();
+
+    }
+
+    @Test
+    @DisplayName("Deve obter um livro por id")
+    public void findByIdTest(){
+        Book book = createNewBook("123");
+        entityManager.persist(book);
+
+        Optional<Book> foundBook = repository.findById(book.getId());
+
+        assertThat(foundBook.isPresent()).isTrue();
 
     }
 }
